@@ -1,0 +1,26 @@
+{
+  "name": "esbuild-ts-node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "esbuild src/main.ts --bundle --platform=node --outfile=dist/index.js",
+    "watch": "npm run build -- --watch",
+    "start": "node dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/coder-ka/esbuild-ts-node.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/coder-ka/esbuild-ts-node/issues"
+  },
+  "homepage": "https://github.com/coder-ka/esbuild-ts-node#readme",
+  "devDependencies": {
+    "@types/node": "^18.11.9",
+    "esbuild": "^0.15.15"
+  }
+}
