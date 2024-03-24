@@ -1,6 +1,6 @@
 {
   "name": "@coder-ka/vite-react18-ssr",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "dist/main-cjs.js",
   "bin": {
@@ -62,7 +62,7 @@
   "peerDependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "vite": "^5.2.4"
+    "vite": "^4.0.0"
   },
   "dependencies": {
     "@coder-ka/redargs": "^1.0.3",

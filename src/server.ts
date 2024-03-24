@@ -10,14 +10,11 @@ import fs from "fs/promises";
 
 export async function ssrPipeDev(
   url: string,
-  viteDevServer: any,
+  viteDevServer: ViteDevServer,
   options: {
     configFilePath?: string;
   } = {}
 ) {
-  // なぜかViteDevServerを引数にするとタイプエラーになるため
-  viteDevServer = viteDevServer as ViteDevServer;
-
   const config = await loadConfigFile(options.configFilePath);
 
   const { ssr } = (await viteDevServer.ssrLoadModule(config.ssrEntry)) as {
