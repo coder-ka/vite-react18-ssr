@@ -12,6 +12,11 @@
       "require": "./dist/main-cjs.js",
       "types": "./types/main.d.ts"
     },
+    "./build": {
+      "import": "./dist/build-esm.js",
+      "require": "./dist/build-cjs.js",
+      "types": "./types/build.d.ts"
+    },
     "./ssr": {
       "import": "./dist/ssr-esm.js",
       "require": "./dist/ssr-cjs.js",
@@ -29,16 +34,19 @@
   ],
   "scripts": {
     "build:main": "esbuild src/main.ts --bundle --platform=node --external:vite",
+    "build:build": "esbuild src/build.ts --bundle --platform=node --external:vite",
     "build:ssr": "esbuild src/ssr.ts --bundle --platform=node --external:react --external:react-dom",
     "build:server": "esbuild src/server.ts --bundle --platform=node --external:vite",
     "build:bin": "esbuild src/bin.ts --bundle --platform=node --outfile=dist/bin.js --external:vite",
     "build:main:esm": "npm run build:main -- --format=esm  --outfile=dist/main-esm.js",
     "build:main:cjs": "npm run build:main -- --format=cjs  --outfile=dist/main-cjs.js",
+    "build:build:esm": "npm run build:build -- --format=esm  --outfile=dist/build-esm.js",
+    "build:build:cjs": "npm run build:build -- --format=cjs  --outfile=dist/build-cjs.js",
     "build:ssr:esm": "npm run build:ssr -- --format=esm  --outfile=dist/ssr-esm.js",
     "build:ssr:cjs": "npm run build:ssr -- --format=cjs  --outfile=dist/ssr-cjs.js",
     "build:server:esm": "npm run build:server -- --format=esm  --outfile=dist/server-esm.js",
     "build:server:cjs": "npm run build:server -- --format=cjs  --outfile=dist/server-cjs.js",
-    "build": "tsc && npm run build:main:esm && npm run build:main:cjs && npm run build:ssr:esm && npm run build:ssr:cjs && npm run build:server:esm && npm run build:server:cjs && npm run build:bin",
+    "build": "tsc && npm run build:main:esm && npm run build:main:cjs && npm run build:build:esm && npm run build:build:cjs && npm run build:ssr:esm && npm run build:ssr:cjs && npm run build:server:esm && npm run build:server:cjs && npm run build:bin",
     "start": "node dist"
   },
   "repository": {
@@ -53,15 +61,15 @@
   },
   "homepage": "https://github.com/coder-ka/vite-react18-ssr#readme",
   "devDependencies": {
-    "@types/node": "^18.11.9",
-    "@types/react": "^18.2.69",
-    "@types/react-dom": "^18.2.22",
+    "@types/node": "^18.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
     "esbuild": "^0.15.15",
     "typescript": "^5.4.3"
   },
   "peerDependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
     "vite": "^4.0.0"
   },
   "dependencies": {

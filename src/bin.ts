@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { reduceArgs } from "@coder-ka/redargs";
-import { build } from "./main";
+import { build } from "./build";
 
 const parsed = reduceArgs<{
   operation: "help" | "build";
