@@ -1,26 +1,72 @@
 {
-  "name": "esbuild-ts-node",
+  "name": "@coder-ka/vite-react18-ssr",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/main-cjs.js",
+  "bin": {
+    "vr18s": "./dist/bin.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/main-esm.js",
+      "require": "./dist/main-cjs.js",
+      "types": "./types/main.d.ts"
+    },
+    "./ssr": {
+      "import": "./dist/ssr-esm.js",
+      "require": "./dist/ssr-cjs.js",
+      "types": "./types/ssr.d.ts"
+    },
+    "./server": {
+      "import": "./dist/server-esm.js",
+      "require": "./dist/server-cjs.js",
+      "types": "./types/server.d.ts"
+    }
+  },
+  "files": [
+    "types",
+    "dist"
+  ],
   "scripts": {
-    "build": "esbuild src/main.ts --bundle --platform=node --outfile=dist/index.js",
-    "watch": "npm run build -- --watch",
+    "build:main": "esbuild src/main.ts --bundle --platform=node --external:vite",
+    "build:ssr": "esbuild src/ssr.ts --bundle --platform=node --external:react --external:react-dom",
+    "build:server": "esbuild src/server.ts --bundle --platform=node --external:vite",
+    "build:bin": "esbuild src/bin.ts --bundle --platform=node --outfile=dist/bin.js --external:vite",
+    "build:main:esm": "npm run build:main -- --format=esm  --outfile=dist/main-esm.js",
+    "build:main:cjs": "npm run build:main -- --format=cjs  --outfile=dist/main-cjs.js",
+    "build:ssr:esm": "npm run build:ssr -- --format=esm  --outfile=dist/ssr-esm.js",
+    "build:ssr:cjs": "npm run build:ssr -- --format=cjs  --outfile=dist/ssr-cjs.js",
+    "build:server:esm": "npm run build:server -- --format=esm  --outfile=dist/server-esm.js",
+    "build:server:cjs": "npm run build:server -- --format=cjs  --outfile=dist/server-cjs.js",
+    "build": "tsc && npm run build:main:esm && npm run build:main:cjs && npm run build:ssr:esm && npm run build:ssr:cjs && npm run build:server:esm && npm run build:server:cjs && npm run build:bin",
     "start": "node dist"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/coder-ka/esbuild-ts-node.git"
+    "url": "git+https://github.com/coder-ka/vite-react18-ssr.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/coder-ka/esbuild-ts-node/issues"
+    "url": "https://github.com/coder-ka/vite-react18-ssr/issues"
   },
-  "homepage": "https://github.com/coder-ka/esbuild-ts-node#readme",
+  "homepage": "https://github.com/coder-ka/vite-react18-ssr#readme",
   "devDependencies": {
     "@types/node": "^18.11.9",
-    "esbuild": "^0.15.15"
+    "@types/react": "^18.2.69",
+    "@types/react-dom": "^18.2.22",
+    "esbuild": "^0.15.15",
+    "typescript": "^5.4.3"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "vite": "^5.2.4"
+  },
+  "dependencies": {
+    "@coder-ka/redargs": "^1.0.3",
+    "node-html-parser": "^6.1.12",
+    "parse5-html-rewriting-stream": "^7.0.0"
   }
 }
