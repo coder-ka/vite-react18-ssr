@@ -1,75 +1,111 @@
-import { Writable } from "stream";
-import type { SSR } from "./ssr";
-import { resolveMetadataFolderPath, loadConfigFile } from "./config";
-import { createStreamForTagInsertion } from "./util/createStreamForTagInsertion";
-import { extractHeadInjection } from "./util/html";
-import { createDummyIndexHtml } from "./html";
-import { ViteDevServer } from "vite";
+import type {
+  PipeableStream,
+  RenderToPipeableStreamOptions,
+} from "react-dom/server";
+import express from "express";
 import path from "path";
 import fs from "fs/promises";
+import getPort from "get-port";
+import { extractHeadInjection } from "./util/html";
+import { createStreamForTagInsertion } from "./util/createStreamForTagInsertion";
+import { createDummyIndexHtml } from "./html";
 
-export async function ssrPipeDev(
+export type ServerSideRenderFn = (
   url: string,
-  viteDevServer: ViteDevServer,
-  options: {
-    configFilePath?: string;
-  } = {}
-) {
-  const config = await loadConfigFile(options.configFilePath);
+  options?: RenderToPipeableStreamOptions
+) => Promise<PipeableStream>;
+export async function ssr(app: express.Express, isProduction: boolean) {
+  if (isProduction) {
+    const clientDir = "dist/client";
 
-  const { ssr } = (await viteDevServer.ssrLoadModule(config.ssrEntry)) as {
-    ssr: SSR;
-  };
-
-  const { pipe: pipeSSR } = await ssr.render(
-    url,
-    {
-      isProduction: false,
-    },
-    {
-      configFilePath: config.configFilePath,
-    }
-  );
-
-  const indexHTML = createDummyIndexHtml(config.clientEntry);
-  const viteTransformed = await viteDevServer.transformIndexHtml(
-    url,
-    indexHTML
-  );
-  const headInjection = extractHeadInjection(viteTransformed);
-
-  return (stream: Writable) =>
-    pipeSSR(
-      createStreamForTagInsertion("html", headInjection, {
-        position: "afterTag",
+    app.use(
+      express.static(clientDir, {
+        index: false,
+        setHeaders(res, filePath) {
+          if (path.basename(filePath) === "index.html") {
+            res.setHeader("Cache-Control", "no-cache");
+          } else {
+            // cache-busting for 1 year if not index.html
+            res.setHeader(
+              "Cache-Control",
+              "public, max-age=31536000, immutable"
+            );
+          }
+        },
       })
-    ).pipe(stream);
-}
-
-export async function createSsrPipeProd(
-  ssrLoadModule: (ssrPath: string) => Promise<{ ssr: SSR }>,
-  options: {
-    configFilePath?: string;
-  } = {}
-) {
-  const config = await loadConfigFile(options.configFilePath);
-  const indexHTMLPath = path.join(
-    resolveMetadataFolderPath(config),
-    "index.html"
-  );
-  const indexHTML = await fs.readFile(indexHTMLPath, "utf-8");
-  const headInjection = extractHeadInjection(indexHTML);
-
-  return async ({ url }: { url: string }) => {
-    const { ssr } = await ssrLoadModule(
-      path.resolve(config.dist, "ssr", "entry-ssr.js")
     );
 
-    const { pipe: pipeSSR } = await ssr.render(url, {
-      isProduction: true,
+    const indexHTMLPath = path.join(
+      clientDir,
+      "node_modules/@coder-ka/vite-react18-ssr/dist/tmp",
+      "index.html"
+    );
+    const indexHTML = await fs.readFile(indexHTMLPath, "utf-8");
+    const headInjection = extractHeadInjection(indexHTML);
+
+    app.use(async (req, res, next) => {
+      const url = req.originalUrl;
+
+      try {
+        const { render } = (await import(
+          path.resolve("dist/ssr/entry-ssr.js")
+        )) as {
+          render: ServerSideRenderFn;
+        };
+
+        const { pipe: pipeSSR } = await render(url);
+
+        pipeSSR(createStreamForTagInsertion("head", headInjection)).pipe(
+          res
+            .status(200)
+            .set({ "Content-Type": "text/html", "Cache-Control": "no-cache" })
+        );
+      } catch (e) {
+        next(e);
+      }
+    });
+  } else {
+    const { createServer: createViteServer } = await import("vite");
+
+    const vite = await createViteServer({
+      server: {
+        middlewareMode: true,
+        hmr: {
+          port: await getPort(),
+        },
+      },
+      appType: "custom",
     });
 
-    return (stream: Writable) =>
-      pipeSSR(createStreamForTagInsertion("head", headInjection)).pipe(stream);
-  };
+    app.use(vite.middlewares);
+
+    app.use(async (req, res, next) => {
+      const url = req.originalUrl;
+
+      try {
+        const { render } = (await vite.ssrLoadModule(
+          "./src/entry-ssr.tsx"
+        )) as { render: ServerSideRenderFn };
+
+        const { pipe: pipeSSR } = await render(url, {
+          bootstrapModules: ["/src/entry-client.tsx"],
+        });
+
+        const indexHTML = createDummyIndexHtml("/src/entry-client.tsx");
+        const viteTransformed = await vite.transformIndexHtml(url, indexHTML);
+        const headInjection = extractHeadInjection(viteTransformed);
+
+        pipeSSR(
+          createStreamForTagInsertion("html", headInjection, {
+            position: "afterTag",
+          })
+        ).pipe(res.status(200).setHeader("content-type", "text/html"));
+      } catch (e) {
+        if (e instanceof Error) vite.ssrFixStacktrace(e);
+        next(e);
+      }
+    });
+  }
+
+  return app;
 }

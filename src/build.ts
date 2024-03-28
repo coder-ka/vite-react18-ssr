@@ -18,6 +18,9 @@ export async function build(
   const distFolder = config.dist;
 
   const metadataFolder = resolveMetadataFolderPath(config);
+  await fs.mkdir(metadataFolder, {
+    recursive: true,
+  });
   await fs.writeFile(
     path.join(metadataFolder, "vr18s.json"),
     JSON.stringify(config),
@@ -32,7 +35,10 @@ export async function build(
   await fs.mkdir(tmpFolder, {
     recursive: true,
   });
-  await prepareDummyIndexHtml(config, tmpFolder);
+  await Promise.all([
+    prepareDummyIndexHtml(config, tmpFolder),
+    prepareEntryClientProxy(config, tmpFolder),
+  ]);
 
   Promise.all([
     vite.build({
@@ -60,8 +66,23 @@ export async function prepareDummyIndexHtml(
   tmpFolder: string
 ) {
   const dummyIndexHtml = createDummyIndexHtml(
-    path.join(path.relative(tmpFolder, "."), config.clientEntry)
+    path.basename(config.clientEntry)
   );
 
   return fs.writeFile(path.join(tmpFolder, "index.html"), dummyIndexHtml);
+}
+
+export async function prepareEntryClientProxy(
+  config: Vr18sConfig,
+  tmpFolder: string
+) {
+  const userCwd = process.cwd();
+
+  return fs.writeFile(
+    path.join(tmpFolder, path.basename(config.clientEntry)),
+    `import "${path.join(
+      path.relative(tmpFolder, userCwd),
+      config.clientEntry
+    )}"`
+  );
 }

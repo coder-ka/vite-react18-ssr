@@ -12,16 +12,17 @@ const parsed = reduceArgs<{
     switch (flag.name) {
       case "-":
         const operation = flag.values[0];
-        if (operation === "build") {
-          return {
-            ...parsed,
-            operation,
-          };
-        } else {
-          return {
-            ...parsed,
-            operation: "help",
-          };
+        switch (operation) {
+          case "build":
+            return {
+              ...parsed,
+              operation,
+            };
+          default:
+            return {
+              ...parsed,
+              operation: "help",
+            };
         }
       case "-c":
       case "--config-file":
