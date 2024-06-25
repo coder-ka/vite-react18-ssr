@@ -5,16 +5,25 @@ import type {
 import express from "express";
 import path from "path";
 import fs from "fs/promises";
-import getPort from "get-port";
 import { extractHeadInjection } from "./util/html";
 import { createStreamForTagInsertion } from "./util/createStreamForTagInsertion";
 import { createDummyIndexHtml } from "./html";
+// import getPort from "get-port";
 
 export type ServerSideRenderFn = (
   url: string,
   options?: RenderToPipeableStreamOptions
 ) => Promise<PipeableStream>;
-export async function ssr(app: express.Express, isProduction: boolean) {
+export async function ssr(
+  app: express.Express,
+  {
+    isProduction,
+    serverPort,
+  }: {
+    isProduction: boolean;
+    serverPort: number;
+  }
+) {
   if (isProduction) {
     const clientDir = "dist/client";
 
@@ -70,9 +79,7 @@ export async function ssr(app: express.Express, isProduction: boolean) {
     const vite = await createViteServer({
       server: {
         middlewareMode: true,
-        hmr: {
-          port: await getPort(),
-        },
+        port: serverPort,
       },
       appType: "custom",
     });
