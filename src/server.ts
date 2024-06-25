@@ -8,7 +8,7 @@ import fs from "fs/promises";
 import { extractHeadInjection } from "./util/html";
 import { createStreamForTagInsertion } from "./util/createStreamForTagInsertion";
 import { createDummyIndexHtml } from "./html";
-// import getPort from "get-port";
+import getPort from "get-port";
 
 export type ServerSideRenderFn = (
   url: string,
@@ -76,10 +76,18 @@ export async function ssr(
   } else {
     const { createServer: createViteServer } = await import("vite");
 
+    const hmrPort = await getPort();
+    console.log(serverPort, hmrPort);
+
     const vite = await createViteServer({
       server: {
         middlewareMode: true,
-        port: serverPort,
+        // port: serverPort,
+        // strictPort: true,
+        hmr: {
+          // clientPort: hmrPort,
+          // port: hmrPort,
+        },
       },
       appType: "custom",
     });
