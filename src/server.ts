@@ -7,7 +7,7 @@ import path from "path";
 import fs from "fs/promises";
 import { extractHeadInjection } from "./util/html";
 import { createStreamForTagInsertion } from "./util/createStreamForTagInsertion";
-import { createDummyIndexHtml } from "./html";
+import { createDummyIndexHtml } from "./util/dummy-html";
 import getPort from "get-port";
 
 export type ServerSideRenderFn = (

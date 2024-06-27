@@ -5,8 +5,8 @@ import {
   Vr18sConfig,
   resolveMetadataFolderPath,
   loadConfigFile,
-} from "./config";
-import { createDummyIndexHtml } from "./html";
+} from "./util/config";
+import { createDummyIndexHtml } from "./util/dummy-html";
 
 export async function build(
   options: {
