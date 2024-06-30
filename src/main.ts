@@ -1,3 +1,5 @@
+import { name } from "../package.json";
+
 export default function (
   options: {
     indexHtmlPath?: string;
@@ -12,7 +14,7 @@ export default function (
             input: {
               app:
                 options.indexHtmlPath ||
-                "node_modules/@coder-ka/vite-react18-ssr/dist/tmp/index.html",
+                `node_modules/${name}/dist/tmp/index.html`,
             },
           },
         },

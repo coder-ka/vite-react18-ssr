@@ -9,6 +9,7 @@ import { extractHeadInjection } from "./util/html";
 import { createStreamForTagInsertion } from "./util/createStreamForTagInsertion";
 import { createDummyIndexHtml } from "./util/dummy-html";
 import getPort from "get-port";
+import { name } from "../package.json";
 
 export type ServerSideRenderFn = (
   url: string,
@@ -46,7 +47,7 @@ export async function ssr(
 
     const indexHTMLPath = path.join(
       clientDir,
-      "node_modules/@coder-ka/vite-react18-ssr/dist/tmp",
+      `node_modules/${name}/dist/tmp`,
       "index.html"
     );
     const indexHTML = await fs.readFile(indexHTMLPath, "utf-8");

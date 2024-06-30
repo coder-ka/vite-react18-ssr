@@ -1,6 +1,6 @@
 {
   "name": "@coder-ka/vite-react18-ssr",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "",
   "main": "dist/main-cjs.js",
   "bin": {
